@@ -1,0 +1,51 @@
+{
+  "name": "rubik_cube",
+  "fps": 29.75,
+  "up": "+z",
+  "K": "K.npy",
+  "R": "R.npy",
+  "t": "t.npy",
+  "videos": [
+    "videos/cam00.mp4",
+    "videos/cam01.mp4",
+    "videos/cam02.mp4",
+    "videos/cam03.mp4"
+  ],
+  "hands": {
+    "left": "boxes_left.npy",
+    "right": "boxes_right.npy"
+  },
+  "object": {
+    "name": "rubik_cube",
+    "articulated": true,
+    "part_meshes": [
+      "object/meshes/cubie_00.ply",
+      "object/meshes/cubie_01.ply",
+      "object/meshes/cubie_02.ply",
+      "object/meshes/cubie_03.ply",
+      "object/meshes/cubie_04.ply",
+      "object/meshes/cubie_05.ply",
+      "object/meshes/cubie_06.ply",
+      "object/meshes/cubie_07.ply",
+      "object/meshes/cubie_08.ply",
+      "object/meshes/cubie_09.ply",
+      "object/meshes/cubie_10.ply",
+      "object/meshes/cubie_11.ply",
+      "object/meshes/cubie_12.ply",
+      "object/meshes/cubie_13.ply",
+      "object/meshes/cubie_14.ply",
+      "object/meshes/cubie_15.ply",
+      "object/meshes/cubie_16.ply",
+      "object/meshes/cubie_17.ply",
+      "object/meshes/cubie_18.ply",
+      "object/meshes/cubie_19.ply",
+      "object/meshes/cubie_20.ply",
+      "object/meshes/cubie_21.ply",
+      "object/meshes/cubie_22.ply",
+      "object/meshes/cubie_23.ply",
+      "object/meshes/cubie_24.ply",
+      "object/meshes/cubie_25.ply"
+    ],
+    "motion": "object/motion.npz"
+  }
+}

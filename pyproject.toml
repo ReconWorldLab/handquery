@@ -1,0 +1,34 @@
+[build-system]
+requires = ["setuptools>=64", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "handquery"
+version = "0.1.0"
+description = "HandQuery: Dense Vertex Queries for Multi-View 4D Hand Reconstruction"
+readme = "README.md"
+license = {text = "Apache-2.0"}
+requires-python = ">=3.10"
+dependencies = [
+    "torch>=2.1.0",
+    "numpy>=1.24.0",
+    "opencv-python>=4.8.0",
+    "smplx>=0.1.28",
+    "scipy>=1.10.0",
+    "pyyaml>=6.0",
+    "viser>=1.0.0",
+]
+
+[project.urls]
+Homepage = "https://reconworldlab.github.io/handquery/"
+Repository = "https://github.com/ReconWorldLab/handquery"
+Paper = "https://arxiv.org/abs/XXXX.XXXXX"
+
+[project.scripts]
+handquery-infer = "scripts.infer:main"
+handquery-prepare = "scripts.prepare_datasets:main"
+handquery-eval = "scripts.evaluate:main"
+handquery-viser = "scripts.view_viser:main"
+
+[tool.setuptools.packages.find]
+include = ["handquery*", "scripts*"]

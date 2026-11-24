@@ -1,0 +1,41 @@
+# Python bytecode & packaging
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+build/
+dist/
+.eggs/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Model weights & external MANO assets
+checkpoints/*.pt
+checkpoints/*.pth
+checkpoints/*.ckpt
+checkpoints/*.safetensors
+assets/mano/
+assets/*.pkl
+
+# Data & outputs
+data/
+outputs/
+*.mp4
+*.npz
+*.npy
+
+# Keep built-in demo examples tracked
+!examples/
+!examples/**
+
+# OS & editor files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

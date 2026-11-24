@@ -1,0 +1,24 @@
+{
+  "name": "pen_spinning",
+  "fps": 29.75,
+  "up": "+z",
+  "K": "K.npy",
+  "R": "R.npy",
+  "t": "t.npy",
+  "videos": [
+    "videos/cam00.mp4",
+    "videos/cam01.mp4",
+    "videos/cam02.mp4",
+    "videos/cam03.mp4"
+  ],
+  "hands": {
+    "left": "boxes_left.npy",
+    "right": "boxes_right.npy"
+  },
+  "object": {
+    "name": "whiteboard_marker",
+    "articulated": false,
+    "mesh": "object/whiteboard_marker.ply",
+    "motion": "object/motion.npz"
+  }
+}
