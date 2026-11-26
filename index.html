@@ -1,0 +1,1102 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<!-- =====================================================================
+     TODO BEFORE PUBLIC RELEASE:
+       Replace XXXX.XXXXX with your live arXiv paper ID (e.g. 2611.12345).
+     ===================================================================== -->
+
+<head>
+  <meta charset="utf-8">
+  <meta name="description" content="HandQuery: Dense Vertex Queries for Multi-View 4D Hand Reconstruction">
+  <meta name="keywords" content="HandQuery, 4D Hand Reconstruction, Multi-View Hand Tracking, Dense Vertex Queries, MANO, Dexterous Retargeting">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>HandQuery: Dense Vertex Queries for Multi-View 4D Hand Reconstruction</title>
+  <link rel="canonical" href="https://reconworldlab.github.io/handquery/">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="HandQuery: Dense Vertex Queries for Multi-View 4D Hand Reconstruction">
+  <meta property="og:description" content="Dense vertex queries for calibrated multi-view 4D hand reconstruction and dexterous robot retargeting.">
+  <meta property="og:url" content="https://reconworldlab.github.io/handquery/">
+  <meta property="og:image" content="https://reconworldlab.github.io/handquery/static/images/pipeline.png">
+  <link rel="icon" href="./static/images/icon.png">
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      background: #ffffff;
+      color: #2b2f36;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      font-size: 16px;
+      line-height: 1.65;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    section, header {
+      scroll-margin-top: 36px;
+    }
+
+    /* Minimalist Floating Side Nav */
+    .floating-nav {
+      position: fixed;
+      right: 20px;
+      top: 50%;
+      transform: translateY(-50%);
+      z-index: 1000;
+      display: flex;
+      flex-direction: row-reverse;
+      align-items: center;
+    }
+
+    .floating-nav-trigger {
+      width: 44px;
+      height: 44px;
+      background: #4f46e5;
+      color: #ffffff;
+      border-radius: 50%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      box-shadow: 0 4px 12px rgba(79, 70, 229, 0.25);
+      cursor: pointer;
+      transition: transform 0.25s ease;
+    }
+
+    .floating-nav:hover .floating-nav-trigger {
+      transform: scale(1.08);
+    }
+
+    .floating-nav-content {
+      background: #ffffff;
+      padding: 14px 18px;
+      border-radius: 10px;
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
+      margin-right: 12px;
+      opacity: 0;
+      visibility: hidden;
+      transform: translateX(14px);
+      transition: all 0.25s ease;
+    }
+
+    .floating-nav:hover .floating-nav-content {
+      opacity: 1;
+      visibility: visible;
+      transform: translateX(0);
+    }
+
+    .floating-nav-menu {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      text-align: center;
+    }
+
+    .floating-nav-menu li {
+      margin-bottom: 8px;
+    }
+
+    .floating-nav-menu li:last-child {
+      margin-bottom: 0;
+    }
+
+    .floating-nav-link {
+      color: #4a4a4a;
+      text-decoration: none;
+      font-size: 0.9rem;
+      font-weight: 500;
+      display: block;
+      white-space: nowrap;
+      transition: color 0.18s;
+    }
+
+    .floating-nav-link:hover,
+    .floating-nav-link.active {
+      color: #4f46e5;
+      font-weight: 700;
+    }
+
+    /* Typography & Hero Header */
+    .hero-title-wrap {
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 3.8rem 1.5rem 1.8rem 1.5rem;
+      text-align: center;
+    }
+
+    .pub-title {
+      margin: 0;
+      font-size: clamp(2rem, 3.6vw, 2.85rem);
+      font-weight: 700;
+      line-height: 1.22;
+      letter-spacing: -0.02em;
+      color: #1a1d24;
+    }
+
+    .pub-title .brand {
+      color: #4f46e5;
+    }
+
+    .pub-authors {
+      max-width: 880px;
+      margin: 1.35rem auto 0 auto;
+      font-size: 1.08rem;
+      line-height: 1.85;
+      color: #1f2937;
+      font-weight: 500;
+    }
+
+    .author-item {
+      display: inline-block;
+      white-space: nowrap;
+      margin: 0 7px;
+    }
+
+    .author-item sup,
+    .pub-affiliations sup,
+    .pub-notes sup {
+      font-size: 0.72em;
+      font-weight: 600;
+      color: #4f46e5;
+      margin-left: 1px;
+    }
+
+    .pub-affiliations {
+      margin: 0.55rem auto 0 auto;
+      font-size: 1.02rem;
+      color: #374151;
+      font-weight: 500;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 22px;
+    }
+
+    .pub-notes {
+      margin: 0.3rem auto 0 auto;
+      font-size: 0.9rem;
+      color: #6b7280;
+    }
+
+    .pub-links {
+      margin: 1.35rem auto 0 auto;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 12px;
+    }
+
+    .pub-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 18px;
+      border-radius: 999px;
+      background: #1f2937;
+      color: #ffffff;
+      text-decoration: none;
+      font-size: 0.94rem;
+      font-weight: 600;
+      border: 1px solid #1f2937;
+      box-shadow: 0 2px 8px rgba(17, 24, 39, 0.12);
+      transition: all 0.18s ease;
+    }
+
+    .pub-btn:hover {
+      background: #4f46e5;
+      border-color: #4f46e5;
+      box-shadow: 0 4px 12px rgba(79, 70, 229, 0.28);
+      transform: translateY(-1px);
+    }
+
+    .pub-btn svg {
+      width: 17px;
+      height: 17px;
+      flex-shrink: 0;
+    }
+
+    .teaser-section {
+      padding: 0.4rem 1.5rem 3rem 1.5rem;
+    }
+
+    .section-block {
+      padding: 3.2rem 1.5rem;
+    }
+
+    .section-block.subtle {
+      background: #fafafa;
+    }
+
+    .section-title {
+      margin: 0 0 1.6rem 0;
+      text-align: center;
+      font-size: 1.85rem;
+      font-weight: 700;
+      color: #1a1d24;
+      letter-spacing: -0.015em;
+    }
+
+    .section-title.accent {
+      color: #4f46e5;
+    }
+
+    .text-narrow {
+      max-width: 860px;
+      margin: 0 auto;
+      text-align: justify;
+      color: #374151;
+      font-size: 1rem;
+    }
+
+    .pipeline-wrap {
+      max-width: 1020px;
+      margin: 0 auto 1.4rem auto;
+    }
+
+    .pipeline-wrap img {
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+
+    /* Minimalist Elevated Card */
+    .card-box {
+      max-width: 1360px;
+      width: 90%;
+      margin: 0 auto;
+      background: #ffffff;
+      padding: 34px 36px;
+      border-radius: 14px;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.07);
+    }
+
+    @media (max-width: 900px) {
+      .card-box {
+        width: 96%;
+        padding: 22px 16px;
+      }
+    }
+
+    .card-desc {
+      max-width: 880px;
+      margin: 0 auto 16px auto;
+      text-align: center;
+      font-size: 1.02rem;
+      color: #374151;
+    }
+
+    .legend {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: center;
+      gap: 22px;
+      margin: 12px 0 24px 0;
+      font-size: 0.92rem;
+      color: #4b5563;
+    }
+
+    .legend-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+    }
+
+    .swatch {
+      width: 16px;
+      height: 16px;
+      border-radius: 4px;
+      border: 1px solid rgba(0, 0, 0, 0.12);
+      display: inline-block;
+    }
+
+    .err-bar {
+      width: 120px;
+      height: 12px;
+      border-radius: 4px;
+      border: 1px solid rgba(0, 0, 0, 0.14);
+      background: linear-gradient(90deg, #d6dfee 0%, #e4d4dc 25%, #eea87b 62%, #ed8032 100%);
+      display: inline-block;
+    }
+
+    /* 3-Column Teaser Grid (only under Title) */
+    .grid-3col {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 20px;
+    }
+
+    /* 2-Column Comparison Grid */
+    .grid-2col {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 24px;
+    }
+
+    /* 1-Column Wide 8-View Grid */
+    .grid-1col {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr);
+      gap: 26px;
+    }
+
+    @media (max-width: 960px) {
+      .grid-3col,
+      .grid-2col {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .vid-title {
+      margin: 0 0 10px 0;
+      text-align: center;
+      font-size: 1.12rem;
+      font-weight: 600;
+      color: #1f2937;
+    }
+
+    .sub-group-title {
+      margin: 34px 0 18px 0;
+      text-align: center;
+      font-size: 1.35rem;
+      font-weight: 700;
+      color: #1f2937;
+    }
+
+    .sub-group-title:first-of-type {
+      margin-top: 6px;
+    }
+
+    video {
+      display: block;
+      width: 100%;
+      border-radius: 10px;
+      background: #0f1115;
+    }
+
+    /* Minimalist Interactive 3D Retargeting Viewer */
+    .rt-controls-top {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+      margin: 4px 0 18px 0;
+    }
+
+    .rt-pill-row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .rt-row-sep {
+      width: 1px;
+      height: 18px;
+      background: #e5e7eb;
+      margin: 0 6px;
+    }
+
+    .rt-group-label {
+      font-size: 0.84rem;
+      font-weight: 600;
+      color: #6b7280;
+      margin-right: 2px;
+    }
+
+    .rt-pill {
+      appearance: none;
+      border: 1px solid #e2e6ee;
+      background: #f8f9fb;
+      color: #374151;
+      font-family: inherit;
+      font-size: 0.88rem;
+      font-weight: 500;
+      padding: 6px 14px;
+      border-radius: 999px;
+      cursor: pointer;
+      transition: all 0.16s ease;
+    }
+
+    .rt-pill:hover:not(:disabled) {
+      border-color: #c7d2fe;
+      color: #4f46e5;
+      background: #f5f7ff;
+    }
+
+    .rt-pill.active {
+      background: #4f46e5;
+      border-color: #4f46e5;
+      color: #ffffff;
+      font-weight: 600;
+      box-shadow: 0 2px 8px rgba(79, 70, 229, 0.22);
+    }
+
+    .rt-pill.subtle.active {
+      background: #1f2937;
+      border-color: #1f2937;
+      box-shadow: none;
+    }
+
+    .rt-pill:disabled {
+      opacity: 0.35;
+      cursor: not-allowed;
+    }
+
+    .rt-mv-wrap {
+      width: 100%;
+      margin: 0 0 12px 0;
+      border-radius: 10px;
+      overflow: hidden;
+      border: 1px solid #e5e7eb;
+      background: #ffffff;
+    }
+
+    .rt-mv-wrap video {
+      display: block;
+      width: 100%;
+      height: auto;
+      border-radius: 0;
+      background: #ffffff;
+    }
+
+    .rt-canvas-wrap {
+      position: relative;
+      width: 100%;
+      height: 460px;
+      border-radius: 12px;
+      overflow: hidden;
+      border: 1px solid #1e2028;
+      background: #090809;
+      user-select: none;
+    }
+
+    @media (max-width: 760px) {
+      .rt-canvas-wrap {
+        height: 330px;
+      }
+      .rt-row-sep {
+        display: none;
+      }
+    }
+
+    .rt-canvas-wrap canvas {
+      display: block;
+      width: 100%;
+      height: 100%;
+    }
+
+    .rt-split-line {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      left: 50%;
+      width: 1px;
+      background: rgba(255, 255, 255, 0.14);
+      pointer-events: none;
+    }
+
+    .rt-pane-tag {
+      position: absolute;
+      top: 12px;
+      padding: 4px 12px;
+      border-radius: 999px;
+      background: rgba(22, 25, 33, 0.72);
+      backdrop-filter: blur(6px);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: #f3f4f6;
+      pointer-events: none;
+    }
+
+    .rt-pane-tag.left {
+      left: 14px;
+    }
+
+    .rt-pane-tag.right {
+      right: 14px;
+    }
+
+    .rt-reset-btn {
+      position: absolute;
+      right: 12px;
+      bottom: 12px;
+      padding: 5px 11px;
+      border-radius: 8px;
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      background: rgba(22, 25, 33, 0.76);
+      backdrop-filter: blur(6px);
+      color: #e5e7eb;
+      font-family: inherit;
+      font-size: 0.8rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .rt-reset-btn:hover {
+      background: rgba(38, 43, 56, 0.92);
+      color: #ffffff;
+      border-color: rgba(255, 255, 255, 0.28);
+    }
+
+    .rt-loading {
+      position: absolute;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(22, 25, 33, 0.72);
+      font-size: 0.92rem;
+      font-weight: 500;
+      color: #e5e7eb;
+    }
+
+    .rt-scrubber {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-top: 12px;
+      padding: 2px 4px 0 4px;
+    }
+
+    .rt-play-btn {
+      width: 36px;
+      height: 32px;
+      border-radius: 8px;
+      border: 1px solid #e2e6ee;
+      background: #f8f9fb;
+      color: #1f2937;
+      font-size: 0.86rem;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .rt-play-btn:hover {
+      border-color: #c7d2fe;
+      color: #4f46e5;
+    }
+
+    .rt-slider {
+      flex: 1;
+      margin: 0;
+      accent-color: #4f46e5;
+      cursor: pointer;
+    }
+
+    .rt-time {
+      font-size: 0.85rem;
+      color: #6b7280;
+      font-variant-numeric: tabular-nums;
+      min-width: 82px;
+      text-align: right;
+    }
+
+    .rt-speed {
+      border: 1px solid #e2e6ee;
+      background: #f8f9fb;
+      color: #374151;
+      border-radius: 7px;
+      padding: 4px 7px;
+      font-family: inherit;
+      font-size: 0.82rem;
+      cursor: pointer;
+    }
+
+    /* BibTeX Block */
+    .bibtex-wrap {
+      max-width: 860px;
+      margin: 0 auto;
+      position: relative;
+    }
+
+    .bibtex-pre {
+      margin: 0;
+      padding: 20px 24px;
+      background: #f8f9fb;
+      border: 1px solid #e5e7eb;
+      border-radius: 12px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 0.88rem;
+      line-height: 1.6;
+      color: #1f2937;
+      overflow-x: auto;
+    }
+
+    .bibtex-copy {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      padding: 5px 12px;
+      border-radius: 7px;
+      border: 1px solid #d1d5db;
+      background: #ffffff;
+      color: #374151;
+      font-family: inherit;
+      font-size: 0.8rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .bibtex-copy:hover {
+      border-color: #4f46e5;
+      color: #4f46e5;
+    }
+
+    footer {
+      padding: 2.5rem 1rem 3rem 1rem;
+      text-align: center;
+      font-size: 0.9rem;
+      color: #6b7280;
+      border-top: 1px solid #f3f4f6;
+    }
+
+    footer a {
+      color: #4f46e5;
+      text-decoration: none;
+    }
+
+    footer a:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- Floating Quick Jump Menu -->
+  <nav class="floating-nav" aria-label="Section navigation">
+    <div class="floating-nav-trigger">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+        stroke-linecap="round">
+        <line x1="4" y1="7" x2="20" y2="7"></line>
+        <line x1="4" y1="12" x2="20" y2="12"></line>
+        <line x1="4" y1="17" x2="20" y2="17"></line>
+      </svg>
+    </div>
+    <div class="floating-nav-content">
+      <ul class="floating-nav-menu">
+        <li><a href="#top" class="floating-nav-link active">Demos</a></li>
+        <li><a href="#abstract" class="floating-nav-link">Abstract</a></li>
+        <li><a href="#method" class="floating-nav-link">Method</a></li>
+        <li><a href="#zeroshot" class="floating-nav-link">Zero-Shot</a></li>
+        <li><a href="#benchmarks" class="floating-nav-link">Benchmarks</a></li>
+        <li><a href="#retargeting" class="floating-nav-link">Retargeting</a></li>
+        <li><a href="#bibtex" class="floating-nav-link">BibTeX</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <!-- Title, Authors, Affiliations & Links -->
+  <header class="hero-title-wrap" id="top">
+    <h1 class="pub-title">
+      <span class="brand">HandQuery</span>: Dense Vertex Queries for<br>Multi-View 4D Hand Reconstruction
+    </h1>
+
+    <div class="pub-authors">
+      <span class="author-item">Yi Gu<sup>&dagger;1</sup></span>
+      <span class="author-item">Xuanhua Chen<sup>&dagger;1</sup></span>
+      <span class="author-item">Yupei Zeng<sup>1</sup></span>
+      <span class="author-item">Hanyang Cao<sup>1</sup></span>
+      <span class="author-item">Mingxi Xu<sup>1</sup></span>
+      <span class="author-item">Yukang Gao<sup>1</sup></span>
+      <span class="author-item">Yangchen Zhou<sup>1</sup></span>
+      <span class="author-item">Fanghai Zhang<sup>1</sup></span>
+      <span class="author-item">Weiming Zhang<sup>1</sup></span>
+      <span class="author-item">Jiaxu Wang<sup>1</sup></span>
+      <span class="author-item">Kang Du<sup>1</sup></span>
+      <span class="author-item">Zhengyang Shen<sup>2</sup></span>
+      <span class="author-item">Renjing Xu<sup>1</sup></span>
+    </div>
+
+    <div class="pub-affiliations">
+      <span><sup>1</sup>HKUST(GZ)</span>
+      <span><sup>2</sup>Google</span>
+    </div>
+    <p class="pub-notes"><sup>&dagger;</sup>Equal Contributions</p>
+
+    <!-- Resource Links (Reserved Placeholders) -->
+    <div class="pub-links">
+      <a class="pub-btn" href="https://arxiv.org/abs/XXXX.XXXXX" target="_blank" rel="noopener">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+          <polyline points="14 2 14 8 20 8"></polyline>
+          <line x1="9" y1="13" x2="15" y2="13"></line>
+          <line x1="9" y1="17" x2="13" y2="17"></line>
+        </svg>
+        <span>arXiv</span>
+      </a>
+
+      <a class="pub-btn" href="https://github.com/ReconWorldLab/handquery" target="_blank" rel="noopener">
+        <svg viewBox="0 0 24 24" fill="currentColor">
+          <path d="M12 .5C5.65.5.5 5.65.5 12c0 5.08 3.29 9.39 7.86 10.91.58.11.79-.25.79-.56 0-.28-.01-1.02-.02-2-3.2.7-3.88-1.54-3.88-1.54-.52-1.33-1.28-1.69-1.28-1.69-1.05-.71.08-.7.08-.7 1.16.08 1.77 1.19 1.77 1.19 1.03 1.76 2.7 1.25 3.36.96.1-.75.4-1.25.73-1.54-2.55-.29-5.24-1.28-5.24-5.68 0-1.26.45-2.28 1.18-3.09-.12-.29-.51-1.46.11-3.05 0 0 .97-.31 3.17 1.18a11.02 11.02 0 0 1 5.78 0c2.2-1.49 3.17-1.18 3.17-1.18.62 1.59.23 2.76.11 3.05.74.81 1.18 1.83 1.18 3.09 0 4.41-2.69 5.38-5.26 5.67.41.36.78 1.06.78 2.14 0 1.55-.01 2.79-.01 3.17 0 .31.21.68.8.56A11.51 11.51 0 0 0 23.5 12C23.5 5.65 18.35.5 12 .5z"/>
+        </svg>
+        <span>Code</span>
+      </a>
+
+      <a class="pub-btn" href="https://drive.google.com/file/d/1Bv7Tz0IYnniWy5PRP7HpRc1StZNCBQtm/view?usp=sharing" target="_blank" rel="noopener">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+          <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+          <line x1="12" y1="22.08" x2="12" y2="12"></line>
+        </svg>
+        <span>Checkpoints</span>
+      </a>
+
+      <a class="pub-btn" href="#bibtex">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+          <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+        </svg>
+        <span>BibTeX</span>
+      </a>
+    </div>
+  </header>
+
+  <!-- 3-Column Teaser Videos Directly Under Title -->
+  <section class="teaser-section" id="demos">
+    <div class="card-box">
+      <div class="grid-3col">
+        <div>
+          <h3 class="vid-title">Rubik's Cube</h3>
+          <video class="auto-vid" autoplay muted loop playsinline controls preload="metadata"
+            poster="./static/thumbs/01_rubik_cube_v2.jpg"
+            src="./static/videos/demos/01_rubik_cube_v2.mp4"></video>
+        </div>
+
+        <div>
+          <h3 class="vid-title">Counter-Strike 2</h3>
+          <video class="auto-vid" autoplay muted loop playsinline controls preload="metadata"
+            poster="./static/thumbs/02_cs2_knife.jpg"
+            src="./static/videos/demos/02_cs2_knife.mp4"></video>
+        </div>
+
+        <div>
+          <h3 class="vid-title">Pen Spinning</h3>
+          <video class="auto-vid" autoplay muted loop playsinline controls preload="metadata"
+            poster="./static/thumbs/03_pen_spin_v2.jpg"
+            src="./static/videos/demos/03_pen_spin_v2.mp4"></video>
+        </div>
+      </div>
+      <p class="card-desc" style="margin: 18px auto 0 auto; font-size: 0.96rem; color: #525866;">
+        Zero-shot 4D hand reconstruction on unseen real-world captures and virtual gameplay.
+      </p>
+    </div>
+  </section>
+
+  <!-- Abstract -->
+  <section class="section-block subtle" id="abstract">
+    <h2 class="section-title">Abstract</h2>
+    <div class="text-narrow">
+      <p style="margin: 0;">
+        High-accuracy hand motion capture typically relies on marker-based optical systems or instrumented gloves, yet
+        applications such as visual imitation learning and hand-object interaction analysis require faithful visual
+        observations of bare hands. Existing markerless methods often process views independently or aggregate them
+        frame by frame, leaving complementary evidence across cameras and time underexploited. We present
+        <strong>HandQuery</strong>, a dense 4D hand reconstruction framework for synchronized and calibrated multi-view
+        videos. HandQuery integrates spatial, temporal, and geometry-aware cross-view fusion within the visual encoder,
+        then uses independent MANO vertex queries to predict dense 2D surface landmarks, visibility, and uncertainty.
+        This formulation supports flexible vertex selection during both training and inference. Uncertainty-aware
+        multi-view MANO fitting integrates the predicted 2D observations into 4D hand meshes. To provide consistent
+        dense supervision and broaden training diversity, we construct synthetic multi-view hand videos with varied
+        appearances and camera configurations. Experiments demonstrate strong accuracy across five real-world benchmarks
+        and robustness to fewer cameras. In zero-shot evaluation on a newly captured studio dataset, HandQuery reduces
+        mean per-vertex error by approximately 39% relative to the strongest baseline.
+      </p>
+    </div>
+  </section>
+
+  <!-- Method Overview -->
+  <section class="section-block" id="method">
+    <h2 class="section-title">Method Overview</h2>
+    <div class="pipeline-wrap">
+      <img src="./static/images/pipeline.png" alt="Overview of HandQuery" />
+    </div>
+    <div class="text-narrow">
+      <p style="margin: 0;">
+        Given synchronized and calibrated multi-view videos, our encoder aggregates complementary evidence across views
+        and time through temporal, spatial, and PRoPE-conditioned view attention prior to landmark readout. Independent
+        MANO vertex queries then cross-attend to the contextualized image features to predict dense 2D locations,
+        visibility, and uncertainty for all 778 vertices, which drive uncertainty-aware multi-view MANO fitting.
+      </p>
+    </div>
+  </section>
+
+  <!-- Zero-Shot Comparisons (2-Column) -->
+  <section class="section-block subtle" id="zeroshot">
+    <h2 class="section-title accent">Zero-Shot Comparisons</h2>
+    <div class="card-box">
+      <p class="card-desc">
+        Synchronized 4-view comparisons on unseen capture setups (left to right: <i>Image</i>, <i>GT</i>,
+        <i>WiLoR + Fit</i>, <i>POEM-v2</i>, <i>UA-Fit</i>, <i>MAMMA</i>, and <i>Ours*</i>).
+      </p>
+      <div class="legend">
+        <span class="legend-item"><span class="swatch" style="background: #ffe592;"></span>Left Hand</span>
+        <span class="legend-item"><span class="swatch" style="background: #cfa0e6;"></span>Right Hand</span>
+      </div>
+
+      <h3 class="sub-group-title">SHOW3D</h3>
+      <div class="grid-2col">
+        <div>
+          <h4 class="vid-title">Toy Vegetables</h4>
+          <video class="auto-vid" autoplay muted loop playsinline controls preload="metadata"
+            poster="./static/thumbs/show3d_01_toy_vegetables.jpg"
+            src="./static/videos/zeroshot/show3d_01_toy_vegetables.mp4"></video>
+        </div>
+
+        <div>
+          <h4 class="vid-title">Waffle Box</h4>
+          <video class="auto-vid" autoplay muted loop playsinline controls preload="metadata"
+            poster="./static/thumbs/show3d_07_waffle_box_trim17s.jpg"
+            src="./static/videos/zeroshot/show3d_07_waffle_box_trim17s.mp4"></video>
+        </div>
+
+        <div>
+          <h4 class="vid-title">Vase Pick-and-Place</h4>
+          <video class="auto-vid" autoplay muted loop playsinline controls preload="metadata"
+            poster="./static/thumbs/show3d_02_vase_pick_place.jpg"
+            src="./static/videos/zeroshot/show3d_02_vase_pick_place.mp4"></video>
+        </div>
+
+        <div>
+          <h4 class="vid-title">Bowl Lifting</h4>
+          <video class="auto-vid" autoplay muted loop playsinline controls preload="metadata"
+            poster="./static/thumbs/show3d_03_bowl_lift.jpg"
+            src="./static/videos/zeroshot/show3d_03_bowl_lift.mp4"></video>
+        </div>
+      </div>
+
+      <h3 class="sub-group-title">GigaHands</h3>
+      <div class="grid-2col">
+        <div>
+          <h4 class="vid-title">Hand Rubbing</h4>
+          <video class="auto-vid" autoplay muted loop playsinline controls preload="metadata"
+            poster="./static/thumbs/gigahands_05_hand_rubbing.jpg"
+            src="./static/videos/zeroshot/gigahands_05_hand_rubbing.mp4"></video>
+        </div>
+
+        <div>
+          <h4 class="vid-title">Burger Box</h4>
+          <video class="auto-vid" autoplay muted loop playsinline controls preload="metadata"
+            poster="./static/thumbs/gigahands_06_burger_box.jpg"
+            src="./static/videos/zeroshot/gigahands_06_burger_box.mp4"></video>
+        </div>
+
+        <div>
+          <h4 class="vid-title">Tea Pouring</h4>
+          <video class="auto-vid" autoplay muted loop playsinline controls preload="metadata"
+            poster="./static/thumbs/gigahands_01_tea_pour.jpg"
+            src="./static/videos/zeroshot/gigahands_01_tea_pour.mp4"></video>
+        </div>
+
+        <div>
+          <h4 class="vid-title">Napkin Pressing</h4>
+          <video class="auto-vid" autoplay muted loop playsinline controls preload="metadata"
+            poster="./static/thumbs/gigahands_03_napkin_press.jpg"
+            src="./static/videos/zeroshot/gigahands_03_napkin_press.mp4"></video>
+        </div>
+      </div>
+
+      <h3 class="sub-group-title">HandQuery-Eval</h3>
+      <p class="card-desc" style="margin: -6px auto 18px auto;">
+        Synchronized 4-view reconstruction (top to bottom: <i>Image</i>, <i>GT</i>, and <i>Ours*</i>).
+      </p>
+      <div class="grid-2col">
+        <div>
+          <h4 class="vid-title">Apple Toss</h4>
+          <video class="auto-vid" autoplay muted loop playsinline controls preload="metadata"
+            poster="./static/thumbs/hqeval_01_apple_toss_4cam.jpg"
+            src="./static/videos/zeroshot/hqeval_01_apple_toss_4cam.mp4"></video>
+        </div>
+
+        <div>
+          <h4 class="vid-title">Clothes Folding</h4>
+          <video class="auto-vid" autoplay muted loop playsinline controls preload="metadata"
+            poster="./static/thumbs/hqeval_02_fold_clothes_4cam.jpg"
+            src="./static/videos/zeroshot/hqeval_02_fold_clothes_4cam.mp4"></video>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ARCTIC-MV & InterHand-MV (2-Column) -->
+  <section class="section-block" id="benchmarks">
+    <h2 class="section-title accent">Multi-View Benchmark Comparisons</h2>
+    <div class="card-box">
+      <p class="card-desc">
+        Synchronized 4-view comparisons colored by unaligned 3D per-vertex error (left to right: <i>Image</i>,
+        <i>GT</i>, <i>WiLoR + Fit</i>, <i>Sapiens2 + Fit</i>, <i>POEM-v2</i>, <i>UA-Fit</i>, <i>MAMMA</i>, and
+        <i>Ours*</i>).
+      </p>
+      <div class="legend">
+        <span class="legend-item">
+          <span>0 mm</span>
+          <span class="err-bar"></span>
+          <span>20+ mm</span>
+        </span>
+      </div>
+
+      <div class="grid-2col">
+        <div>
+          <h3 class="vid-title">ARCTIC-MV</h3>
+          <video class="auto-vid" autoplay muted loop playsinline controls preload="metadata"
+            poster="./static/thumbs/arctic_01_scissors_use.jpg"
+            src="./static/videos/benchmarks/arctic_01_scissors_use.mp4"></video>
+        </div>
+
+        <div>
+          <h3 class="vid-title">InterHand-MV</h3>
+          <video class="auto-vid" autoplay muted loop playsinline controls preload="metadata"
+            poster="./static/thumbs/interhand_01_finger_occlusion.jpg"
+            src="./static/videos/benchmarks/interhand_01_finger_occlusion.mp4"></video>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Interactive 3D Dexterous Robot Retargeting -->
+  <section class="section-block subtle" id="retargeting">
+    <h2 class="section-title accent">Dexterous Robot Retargeting</h2>
+    <div class="card-box" id="rt-viewer-root">
+      <p class="card-desc">
+        Synchronized 8-view observations and interactive 3D retargeting to bimanual dexterous robot hands
+        (<i>Sharpa</i> and <i>Wuji</i>). Drag to orbit, scroll to zoom, right-drag to pan.
+      </p>
+
+      <div class="rt-controls-top">
+        <div class="rt-pill-row">
+          <span class="rt-group-label">Task:</span>
+          <div class="rt-pill-row" id="rt-seq-pills"></div>
+          <span class="rt-row-sep"></span>
+          <span class="rt-group-label">Hand:</span>
+          <div class="rt-pill-row" id="rt-fam-pills"></div>
+          <span class="rt-row-sep"></span>
+          <span class="rt-group-label">View:</span>
+          <div class="rt-pill-row" id="rt-mode-pills"></div>
+        </div>
+      </div>
+
+      <div class="rt-mv-wrap">
+        <video id="rt-mv-video" muted loop playsinline preload="metadata"
+          poster="./static/thumbs/pen_spin_20261102_141627_mv.jpg"
+          src="./static/videos/retarget/pen_spin_20261102_141627_mv.mp4"></video>
+      </div>
+
+      <div class="rt-canvas-wrap" id="rt-canvas-wrap">
+        <div class="rt-split-line" id="rt-split-line"></div>
+        <div class="rt-pane-tag left" id="rt-tag-left">Human (Ours)</div>
+        <div class="rt-pane-tag right" id="rt-tag-right">Sharpa</div>
+        <button type="button" class="rt-reset-btn" id="rt-reset-cam">Reset View</button>
+        <div class="rt-loading" id="rt-loading">Loading 3D motion...</div>
+      </div>
+
+      <div class="rt-scrubber">
+        <button type="button" class="rt-play-btn" id="rt-play" title="Play / Pause">❚❚</button>
+        <input type="range" class="rt-slider" id="rt-slider" min="0" max="594" value="0" step="1">
+        <span class="rt-time" id="rt-time">0.0s / 10.0s</span>
+        <select class="rt-speed" id="rt-speed" aria-label="Playback speed">
+          <option value="0.25">0.25&times;</option>
+          <option value="0.5">0.5&times;</option>
+          <option value="1" selected>1&times;</option>
+        </select>
+      </div>
+    </div>
+  </section>
+
+  <!-- BibTeX Citation -->
+  <section class="section-block" id="bibtex">
+    <h2 class="section-title">BibTeX</h2>
+    <div class="bibtex-wrap">
+      <button type="button" class="bibtex-copy" id="bibtex-copy-btn">Copy</button>
+      <pre class="bibtex-pre" id="bibtex-code">@article{gu2026handquery,
+  title   = {HandQuery: Dense Vertex Queries for Multi-View 4D Hand Reconstruction},
+  author  = {Gu, Yi and Chen, Xuanhua and Zeng, Yupei and Cao, Hanyang and Xu, Mingxi and Gao, Yukang and Zhou, Yangchen and Zhang, Fanghai and Zhang, Weiming and Wang, Jiaxu and Du, Kang and Shen, Zhengyang and Xu, Renjing},
+  journal = {arXiv preprint arXiv:XXXX.XXXXX},
+  year    = {2026}
+}</pre>
+    </div>
+  </section>
+
+  <footer>
+    <strong>HandQuery</strong> &middot;
+    <a href="https://reconworldlab.github.io/handquery/">Project Page</a> &middot;
+    <a href="https://arxiv.org/abs/XXXX.XXXXX" target="_blank" rel="noopener">arXiv</a> &middot;
+    <a href="https://github.com/ReconWorldLab/handquery" target="_blank" rel="noopener">Code</a>
+  </footer>
+
+  <script src="./static/js/three_orbit.js"></script>
+  <script src="./static/retarget/assets.js"></script>
+  <script src="./static/retarget/clips/pen_spin_20261102_141627.js"></script>
+  <script src="./static/js/retarget_viewer.js"></script>
+
+  <script>
+    (function () {
+      var copyBtn = document.getElementById('bibtex-copy-btn');
+      var bibCode = document.getElementById('bibtex-code');
+      if (copyBtn && bibCode && navigator.clipboard) {
+        copyBtn.addEventListener('click', function () {
+          navigator.clipboard.writeText(bibCode.textContent || '').then(function () {
+            copyBtn.textContent = 'Copied!';
+            setTimeout(function () { copyBtn.textContent = 'Copy'; }, 1600);
+          });
+        });
+      }
+
+      var links = Array.prototype.slice.call(document.querySelectorAll('.floating-nav-link'));
+      var secs = links.map(function (a) { return document.getElementById(a.getAttribute('href').slice(1)); }).filter(Boolean);
+
+      if ('IntersectionObserver' in window && secs.length) {
+        var navObs = new IntersectionObserver(function (entries) {
+          entries.forEach(function (e) {
+            if (e.isIntersecting) {
+              var id = '#' + e.target.id;
+              links.forEach(function (a) { a.classList.toggle('active', a.getAttribute('href') === id); });
+            }
+          });
+        }, { rootMargin: '-30% 0px -55% 0px', threshold: 0 });
+        secs.forEach(function (s) { navObs.observe(s); });
+      }
+
+      var vids = document.querySelectorAll('.auto-vid');
+      if ('IntersectionObserver' in window && vids.length) {
+        var vidObs = new IntersectionObserver(function (entries) {
+          entries.forEach(function (e) {
+            var v = e.target;
+            if (e.isIntersecting) {
+              if (v.dataset.userPaused !== '1') {
+                var p = v.play();
+                if (p && typeof p.catch === 'function') p.catch(function () {});
+              }
+            } else if (!v.paused) {
+              v.dataset.autoPaused = '1';
+              v.pause();
+            }
+          });
+        }, { rootMargin: '250px 0px 250px 0px', threshold: 0.05 });
+
+        Array.prototype.forEach.call(vids, function (v) {
+          v.addEventListener('pause', function () {
+            if (v.dataset.autoPaused === '1') v.dataset.autoPaused = '0';
+            else if (!v.ended) v.dataset.userPaused = '1';
+          });
+          v.addEventListener('play', function () { v.dataset.userPaused = '0'; });
+          vidObs.observe(v);
+        });
+      }
+    })();
+  </script>
+
+</body>
+
+</html>
